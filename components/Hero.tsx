@@ -1,29 +1,25 @@
-"use client";
-
-import dynamic from "next/dynamic";
-
-// Canvas layers only exist in the browser.
-const Embers = dynamic(() => import("./Embers"), { ssr: false });
-const Scene = dynamic(() => import("./Scene"), { ssr: false });
+import AsciiPortrait from "./AsciiPortrait";
+import { SITE } from "../lib/site";
 
 export default function Hero() {
   return (
     <header className="hero">
-      <Scene />
-      <Embers />
       <div className="hero-copy">
-        <p className="eyebrow">Kuala Lumpur</p>
         <h1>
-          Qasyeef <span>(Sunny)</span>
+          Hey, I&rsquo;m <em>Sunny.</em>
         </h1>
         <p className="lede">
-          Software engineer &amp; AI builder. Building agentic systems, reading dark fantasy, and always down for new
-          experiences.
+          I build AI that has to work on a Tuesday, not just in a demo. Agents, document pipelines, and the glue that
+          keeps them honest. Based in KL, usually mid-chapter in something with dragons.
         </p>
         <nav className="links" aria-label="Links">
-          <a href="https://github.com/QasyeefSunnymizer">GitHub</a>
-          <a href="https://www.linkedin.com/in/qasyeefilhanbutt/">LinkedIn</a>
+          <a href="#work">Work</a>
+          <a href="#elsewhere">Elsewhere</a>
+          <a href={`mailto:${SITE.email}`}>Say hi</a>
         </nav>
+      </div>
+      <div className="portrait">
+        <AsciiPortrait />
       </div>
     </header>
   );

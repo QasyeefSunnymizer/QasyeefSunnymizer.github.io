@@ -1,6 +1,6 @@
 # Portfolio
 
-Personal site: Next.js (static export), Pixi.js for the 2D ember layer, Three.js for the 3D knot.
+Personal site: Next.js (static export), 
 
 ```bash
 npm install
