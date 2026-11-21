@@ -1,4 +1,4 @@
-import AsciiPortrait from "./AsciiPortrait";
+import AsciiKnot from "./AsciiKnot";
 import { SITE } from "../lib/site";
 
 export default function Hero() {
@@ -19,7 +19,7 @@ export default function Hero() {
         </nav>
       </div>
       <div className="portrait">
-        <AsciiPortrait />
+        <AsciiKnot />
       </div>
     </header>
   );
