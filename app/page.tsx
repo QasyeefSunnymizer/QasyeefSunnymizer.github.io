@@ -103,15 +103,13 @@ export default async function Page() {
       {BOOKS.length > 0 && (
         <section className="block" id="shelf">
           <h2>On the shelf</h2>
-          <ul className="work">
+          <p>Dragons, dungeons, a serial killer or two, and a lot of Chinese web novels. {BOOKS.length} picks from the stack.</p>
+          <ul className="shelf">
             {BOOKS.map((b) => (
               <li key={b.title}>
-                <div className="row">
-                  <h3>{b.title}</h3>
-                  <p>
-                    {b.author}. {b.take}
-                  </p>
-                </div>
+                <span className="shelf-title">{b.title}</span>
+                <span className="shelf-author">{b.author}</span>
+                {b.take && <span className="shelf-take">{b.take}</span>}
               </li>
             ))}
           </ul>
