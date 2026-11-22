@@ -2,7 +2,20 @@
 
 import { useEffect, useRef } from "react";
 
-const GLYPHS = ["{", "}", ";", "=>", "()", "[]", "::", "ᚠ", "ᚦ", "ᚱ", "ᛉ", "ᛟ", "ᛗ", "✦", "∴"];
+const CODE = ["{", "}", ";", "=>", "()", "[]", "::"];
+
+/** Runes drawn as strokes (unit box, y down) so they never depend on installed fonts. */
+const RUNES: Record<string, number[][][]> = {
+  fehu: [[[0.3, 0], [0.3, 1]], [[0.3, 0.35], [0.8, 0.05]], [[0.3, 0.7], [0.8, 0.4]]],
+  thurisaz: [[[0.3, 0], [0.3, 1]], [[0.3, 0.2], [0.8, 0.5], [0.3, 0.8]]],
+  raido: [[[0.25, 0], [0.25, 1]], [[0.25, 0], [0.75, 0.25], [0.25, 0.5], [0.8, 1]]],
+  algiz: [[[0.5, 0], [0.5, 1]], [[0.1, 0.1], [0.5, 0.55], [0.9, 0.1]]],
+  othala: [[[0.5, 0], [0.9, 0.35], [0.5, 0.7], [0.1, 0.35], [0.5, 0]], [[0.3, 0.55], [0.1, 1]], [[0.7, 0.55], [0.9, 1]]],
+  mannaz: [[[0.15, 0], [0.15, 1]], [[0.85, 0], [0.85, 1]], [[0.15, 0], [0.85, 0.5]], [[0.85, 0], [0.15, 0.5]]],
+  star: [[[0.5, 0], [0.62, 0.38], [1, 0.5], [0.62, 0.62], [0.5, 1], [0.38, 0.62], [0, 0.5], [0.38, 0.38], [0.5, 0]]],
+};
+const RUNE_KEYS = Object.keys(RUNES);
+const GLYPHS = [...CODE, ...CODE, ...RUNE_KEYS, "star"];
 
 type P = { x: number; y: number; v: number; size: number; g: string; a: number; ph: number; hue: 0 | 1; par: number };
 
@@ -57,9 +70,29 @@ export default function AmbientField() {
         const wy = ((y % (h + 60)) + (h + 60)) % (h + 60) - 30;
         // fade in near bottom, out near top
         const edge = Math.min(1, Math.max(0, wy / 140), Math.max(0, (h - wy + 20) / 100));
-        ctx.font = `${p.size}px ui-monospace, Menlo, Consolas, monospace`;
-        ctx.fillStyle = p.hue ? `rgba(220,174,85,${p.a * edge})` : `rgba(200,71,59,${p.a * edge})`;
-        ctx.fillText(p.g, p.x + sway, wy);
+        const col = p.hue ? `rgba(220,174,85,${p.a * edge})` : `rgba(200,71,59,${p.a * edge})`;
+        const rune = RUNES[p.g];
+        if (rune) {
+          const s = p.size;
+          ctx.strokeStyle = col;
+          ctx.lineWidth = Math.max(1, s / 11);
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          ctx.beginPath();
+          for (const line of rune) {
+            line.forEach(([u, v], i) => {
+              const px = p.x + sway + u * s * 0.8;
+              const py = wy - s + v * s;
+              if (i === 0) ctx.moveTo(px, py);
+              else ctx.lineTo(px, py);
+            });
+          }
+          ctx.stroke();
+        } else {
+          ctx.font = `${p.size}px ui-monospace, Menlo, Consolas, monospace`;
+          ctx.fillStyle = col;
+          ctx.fillText(p.g, p.x + sway, wy);
+        }
       }
     };
 

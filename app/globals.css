@@ -210,7 +210,10 @@ h1, .block h2, .row h3, .shelf-title, .group h3 { font-variation-settings: "SOFT
 .lede::first-letter {
   float: left; font-family: var(--font-display), serif; font-size: 3.6em; line-height: 0.8; padding: 6px 10px 0 0; color: var(--gold);
 }
-.block h2::after { content: "❦"; display: block; margin-top: 10px; font-size: 1.05rem; color: var(--gold); opacity: 0.85; font-weight: 400; }
+.block h2::after { content: ""; display: block; width: 84px; height: 9px; margin-top: 12px; opacity: 0.85; background:
+  linear-gradient(var(--gold), var(--gold)) 0 50% / 32px 1px no-repeat,
+  linear-gradient(var(--gold), var(--gold)) 100% 50% / 32px 1px no-repeat,
+  linear-gradient(var(--gold), var(--gold)) 50% 50% / 7px 7px no-repeat; clip-path: none; }
 .closer h2::after { margin-top: 14px; }
 
 /* marginalia in the heading rail */
@@ -231,7 +234,7 @@ h1, .block h2, .row h3, .shelf-title, .group h3 { font-variation-settings: "SOFT
 .tile-link:hover { border-color: var(--gold); }
 .tile-blank { border-radius: 2px; }
 .group h3 { font-style: italic; }
-.group h3::before { content: "✦ "; color: var(--gold); font-style: normal; font-size: 0.9em; }
+.group h3::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 9px; background: var(--gold); transform: rotate(45deg) translateY(-1px); }
 
 /* work list as ruled ledger */
 .work li { border-color: rgba(220, 174, 85, 0.28); }
