@@ -1,7 +1,7 @@
-import AsciiKnot from "./AsciiKnot";
 import { SITE } from "../lib/site";
+import ClientOnly from "./ClientOnly";
 
-export default function Hero() {
+export default function Hero({ commit }: { commit: string }) {
   return (
     <header className="hero">
       <div className="hero-copy">
@@ -13,14 +13,18 @@ export default function Hero() {
           keeps them honest. Based in KL, usually mid-chapter in something with dragons.
         </p>
         <nav className="links" aria-label="Links">
+          <a href="#latest">Latest</a>
           <a href="#work">Work</a>
-          <a href="#elsewhere">Elsewhere</a>
+          <a href={SITE.github}>GitHub</a>
           <a href={`mailto:${SITE.email}`}>Say hi</a>
         </nav>
       </div>
-      <div className="portrait">
-        <AsciiKnot />
-      </div>
+      <figure className="portrait">
+        <ClientOnly />
+        <figcaption>
+          <code>excalibur.git</code> <code>main @ {commit}</code> <span>click the sword</span>
+        </figcaption>
+      </figure>
     </header>
   );
 }

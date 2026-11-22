@@ -1,5 +1,19 @@
+import { execSync } from "node:child_process";
 import Hero from "../components/Hero";
+import OpenTerm from "../components/OpenTerm";
+import Reel from "../components/Reel";
+import Terminal from "../components/Terminal";
+import { BOOKS, NOW } from "../lib/content";
 import { SITE } from "../lib/site";
+import { latestVideos } from "../lib/youtube";
+
+const commit = (() => {
+  try {
+    return execSync("git rev-parse --short HEAD").toString().trim();
+  } catch {
+    return "a3f9c21";
+  }
+})();
 
 const work = [
   {
@@ -10,10 +24,12 @@ const work = [
   },
 ];
 
-export default function Page() {
+export default async function Page() {
+  const videos = await latestVideos();
+  const now = Object.entries(NOW).filter(([, v]) => v);
   return (
     <main>
-      <Hero />
+      <Hero commit={commit} />
 
       <section className="block about" id="about">
         <figure>
@@ -41,8 +57,25 @@ export default function Page() {
         </div>
       </section>
 
+      {now.length > 0 && (
+        <section className="block now" aria-label="Right now">
+          {now.map(([k, v]) => (
+            <p key={k}>
+              <span>{k}</span> {v}
+            </p>
+          ))}
+        </section>
+      )}
+
+      <section className="block wide" id="latest">
+        <h2>Latest, unfiltered</h2>
+        <p>Straight from the channels. Mostly food, sometimes code, occasionally both.</p>
+        <Reel videos={videos} />
+      </section>
+
       <section className="block" id="work">
         <h2>Things I&rsquo;ve built</h2>
+        <p>Short list for now. It grows when I ship.</p>
         <ul className="work">
           {work.map((w) => {
             const inner = (
@@ -67,32 +100,23 @@ export default function Page() {
         </ul>
       </section>
 
-      <section className="block" id="elsewhere">
-        <h2>Elsewhere</h2>
-        <p>The less polished side of me lives here.</p>
-        <ul className="work">
-          {SITE.elsewhere.map((e) => (
-            <li key={e.href}>
-              <a href={e.href} className="row">
-                <h3>{e.label}</h3>
-                <p>{e.note}</p>
-              </a>
-            </li>
-          ))}
-          <li>
-            <a href={SITE.github} className="row">
-              <h3>GitHub</h3>
-              <p>The code, where it&rsquo;s public.</p>
-            </a>
-          </li>
-          <li>
-            <a href={SITE.linkedin} className="row">
-              <h3>LinkedIn</h3>
-              <p>The serious version of this page.</p>
-            </a>
-          </li>
-        </ul>
-      </section>
+      {BOOKS.length > 0 && (
+        <section className="block" id="shelf">
+          <h2>On the shelf</h2>
+          <ul className="work">
+            {BOOKS.map((b) => (
+              <li key={b.title}>
+                <div className="row">
+                  <h3>{b.title}</h3>
+                  <p>
+                    {b.author}. {b.take}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="block closer">
         <h2>Say hi</h2>
@@ -100,11 +124,18 @@ export default function Page() {
         <a className="cta" href={`mailto:${SITE.email}`}>
           {SITE.email}
         </a>
+        <p className="elsewhere">
+          <a href={SITE.github}>GitHub</a>
+          <a href={SITE.linkedin}>LinkedIn</a>
+        </p>
         <p className="sig" aria-hidden="true">Qasyeef Sunnymizer</p>
       </section>
 
       <footer className="foot">
-        <p>Kuala Lumpur. Made by me, {new Date().getFullYear()}.</p>
+        <p>
+          Kuala Lumpur. Hand-assembled, {new Date().getFullYear()}. Psst: press <kbd>`</kbd> or <OpenTerm />.
+        </p>
+        <Terminal />
       </footer>
     </main>
   );
