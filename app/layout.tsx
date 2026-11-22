@@ -7,7 +7,7 @@ const hand = Caveat({ subsets: ["latin"], variable: "--font-hand", weight: "600"
 const body = Instrument_Sans({ subsets: ["latin"], variable: "--font-body" });
 
 export const metadata: Metadata = {
-  title: "Sunny (Qasyeef Ilhan)",
+  title: "Qasyeef (Sunny)",
   description:
     "Software engineer in KL. I build agentic systems and document-AI that has to survive real users. Dark fantasy addict.",
 };

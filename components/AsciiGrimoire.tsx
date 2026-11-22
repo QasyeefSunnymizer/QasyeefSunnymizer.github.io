@@ -141,10 +141,10 @@ export default function AsciiGrimoire() {
     const size = () => {
       const w = canvas.parentElement!.getBoundingClientRect().width;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      cols = w < 360 ? 70 : 100;
+      cols = w < 420 ? 76 : w < 560 ? 96 : 124;
       cw = w / cols;
       ch = cw * ROW;
-      rows = Math.round((w * 1.08) / ch);
+      rows = Math.round((w * 1.12) / ch);
       canvas.width = w * dpr;
       canvas.height = rows * ch * dpr;
       canvas.style.width = `${w}px`;
@@ -164,7 +164,7 @@ export default function AsciiGrimoire() {
       const k = Math.min(1, Math.max(0, (time - pull) / 1500));
       const lift = pull > 0 ? 1.4 * Math.sin(Math.PI * k) ** 2 : 0;
       const cursorOn = Math.floor(time / 520) % 2 === 0;
-      const scale = cols * 0.235;
+      const scale = cols * 0.25;
       const { pos, nrm, tone, mat, grp } = model;
       for (let i = 0; i < N; i++) {
         if (grp[i] === 2 && !cursorOn) continue;
@@ -189,7 +189,7 @@ export default function AsciiGrimoire() {
         let L = nx1 * 0.35 + ny2 * 0.8 + nz2 * 0.5;
         if (nz2 < 0) L = -L; // face the camera
         zbuf[idx] = z2;
-        vbuf[idx] = Math.min(1, (0.4 + 0.6 * Math.max(0, L)) * tone[i] * 1.2);
+        vbuf[idx] = Math.min(1, (0.55 + 0.45 * Math.max(0, L)) * Math.max(tone[i], 0.4) * 1.35);
         mbuf[idx] = mat[i];
       }
       ctx.clearRect(0, 0, cols * cw, rows * ch);
@@ -206,7 +206,7 @@ export default function AsciiGrimoire() {
               : RAMP[Math.min(RAMP.length - 1, Math.floor(v * RAMP.length))];
           if (g === " ") continue;
           const c = COLORS[mt];
-          const f = 0.55 + 0.45 * v;
+          const f = 0.75 + 0.25 * v;
           ctx.fillStyle = `rgb(${Math.round(c[0] * f)},${Math.round(c[1] * f)},${Math.round(c[2] * f)})`;
           ctx.fillText(g, x * cw, y * ch);
         }
@@ -253,7 +253,7 @@ export default function AsciiGrimoire() {
       role="img"
       aria-label="A grimoire open on its spine with a sword planted in it, slowly revolving, drawn in code characters"
       title="Click it. Go on."
-      style={{ cursor: "pointer" }}
+      style={{ cursor: "pointer", filter: "drop-shadow(0 0 16px rgba(255,106,61,0.32))" }}
     />
   );
 }

@@ -67,9 +67,9 @@ export default async function Page() {
         </section>
       )}
 
-      <section className="block wide" id="latest">
+      <section className="block" id="latest">
         <h2>Latest, unfiltered</h2>
-        <p>Straight from the channels. Mostly food, sometimes code, occasionally both.</p>
+        <p>The newest from each channel. Mostly food, sometimes code, occasionally both.</p>
         <Reel videos={videos} />
       </section>
 

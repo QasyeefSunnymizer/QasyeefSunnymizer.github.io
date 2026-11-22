@@ -6,7 +6,7 @@ export default function Hero({ commit }: { commit: string }) {
     <header className="hero">
       <div className="hero-copy">
         <h1>
-          Hey, I&rsquo;m <em>Sunny.</em>
+          Qasyeef <em>(Sunny)</em>
         </h1>
         <p className="lede">
           I build AI that has to work on a Tuesday, not just in a demo. Agents, document pipelines, and the glue that

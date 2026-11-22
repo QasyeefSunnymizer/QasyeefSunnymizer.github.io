@@ -2,7 +2,7 @@
 
 /** The "right now" strip under the intro. Leave a field "" to hide it. */
 export const NOW = {
-  reading: "",
+  reading: "Dungeon Crawler Carl and God of Fishing",
   eating: "",
   building: "",
 };
@@ -37,4 +37,18 @@ export const BOOKS: { title: string; author: string; take?: string }[] = [
  *  { platform: "Instagram", title: "Cheese pull, Chaska #7", href: "https://www.instagram.com/p/XXXX/", img: "/reel/cheese.jpg" }
  *  Put images in /public/reel/. `img` is optional. YouTube videos are added automatically.
  */
-export const REEL: { platform: string; title: string; href: string; img?: string }[] = [];
+export const REEL: { platform: string; title: string; href: string; img?: string }[] = [
+  {
+    platform: "Instagram",
+    title: "Chaska #7: We at Gula Cakery again. It's the burnt cheesecake redemption arc 🙏",
+    href: "https://www.instagram.com/qasyeefsunnymizer/reel/DYtPHdkxVaD/",
+    img: "/reel/ig1.jpg",
+  },
+  {
+    platform: "Instagram",
+    title: "Cheesecak #2: Amazing cheese naan. Anything above 5 is damn good, I'm just nitpicking.",
+    href: "https://www.instagram.com/qasyeefsunnymizer/reel/DR3gLL0kbM3/",
+    img: "/reel/ig2.jpg",
+  },
+  // X and Substack: add { platform: "X", title: "...", href: "https://x.com/mcdoubleq/status/..." }
+];
