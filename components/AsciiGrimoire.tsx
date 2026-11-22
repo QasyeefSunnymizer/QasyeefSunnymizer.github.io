@@ -164,7 +164,7 @@ export default function AsciiGrimoire() {
       const k = Math.min(1, Math.max(0, (time - pull) / 1500));
       const lift = pull > 0 ? 1.4 * Math.sin(Math.PI * k) ** 2 : 0;
       const cursorOn = Math.floor(time / 520) % 2 === 0;
-      const scale = cols * 0.25;
+      const scale = cols * 0.222;
       const { pos, nrm, tone, mat, grp } = model;
       for (let i = 0; i < N; i++) {
         if (grp[i] === 2 && !cursorOn) continue;
@@ -253,7 +253,7 @@ export default function AsciiGrimoire() {
       role="img"
       aria-label="A grimoire open on its spine with a sword planted in it, slowly revolving, drawn in code characters"
       title="Click it. Go on."
-      style={{ cursor: "pointer", filter: "drop-shadow(0 0 16px rgba(255,106,61,0.32))" }}
+      style={{ cursor: "pointer", filter: "drop-shadow(0 0 16px rgba(255,106,61,0.32))", WebkitMaskImage: "radial-gradient(ellipse 54% 54% at 50% 50%, #000 78%, transparent 100%)", maskImage: "radial-gradient(ellipse 54% 54% at 50% 50%, #000 78%, transparent 100%)" }}
     />
   );
 }
