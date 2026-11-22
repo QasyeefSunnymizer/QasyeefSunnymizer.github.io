@@ -7,13 +7,14 @@ const CODE = "{}[]();=<>/*+-_&|";
 const ROW = 1.65; // glyph height / width
 
 // materials
-const PAGE = 0, COVER = 1, STEEL = 2, CURSOR = 3, HILT = 4;
+const PAGE = 0, COVER = 1, STEEL = 2, CURSOR = 3, HILT = 4, WOOD = 5;
 const COLORS: [number, number, number][] = [
   [236, 214, 160], // page: aged parchment
   [196, 66, 52], // cover: oxblood leather
   [239, 231, 214], // steel: bone
   [255, 250, 235], // cursor
   [220, 174, 85], // hilt: candle gold
+  [168, 112, 66], // staff wood
 ];
 
 const hash = (n: number) => {
@@ -23,11 +24,21 @@ const hash = (n: number) => {
 
 type Model = { pos: number[]; nrm: number[]; tone: number[]; mat: number[]; grp: number[] };
 
-/** An open grimoire with a sword planted in the spine. Pages hold code, the blade holds runes. */
+/**
+ * Mage-knight arms: a grimoire worn as a heater shield, a sword and a staff crossed behind it.
+ * Groups: 0 shield, 1 sword, 2 cursor (blinks), 3 staff.
+ */
 function buildModel(): Model {
   const m: Model = { pos: [], nrm: [], tone: [], mat: [], grp: [] };
-  const cy = 1.65; // recentre
+  const cy = -0.05; // recentre
+  let xf: { phi: number; ox: number; oy: number; oz: number } | null = null;
   const add = (x: number, y: number, z: number, nx: number, ny: number, nz: number, tone: number, mat: number, grp: number) => {
+    if (xf) {
+      const c = Math.cos(xf.phi), sn = Math.sin(xf.phi);
+      [x, y] = [x * c - y * sn + xf.ox, x * sn + y * c + xf.oy];
+      [nx, ny] = [nx * c - ny * sn, nx * sn + ny * c];
+      z += xf.oz;
+    }
     m.pos.push(x, y - cy, z);
     m.nrm.push(nx, ny, nz);
     m.tone.push(tone);
@@ -35,44 +46,54 @@ function buildModel(): Model {
     m.grp.push(grp);
   };
   const S = 0.03;
-  const slope = 0.22 / 1.6;
-  const valley = (ax: number) => 0.22 * (ax / 1.6);
 
-  // pages: two sheets forming a V, code lines as texture
-  for (const s of [-1, 1]) {
-    const nl = Math.hypot(slope, 1);
-    for (let u = 0; u <= 1.6; u += S) {
-      for (let v = -1.1; v <= 1.1; v += S) {
-        const rowF = (v + 1.1) / 0.13;
-        const row = Math.floor(rowF);
-        const f = rowF - row;
-        const len = 0.5 + 0.5 * hash(row + (s > 0 ? 7 : 0));
-        const indent = hash(row * 3 + s) > 0.7 ? 0.2 : 0;
-        const inLine = f > 0.2 && f < 0.75 && u > 0.12 + indent && u < 0.12 + indent + len * 1.3 && row > 0 && row < 16;
-        add(s * u, valley(u), v, (-s * slope) / nl, 1 / nl, 0, inLine ? 1 : 0.3, PAGE, 0);
+  // ── shield (the grimoire) ──
+  const HW = 0.98, TOP = 0.92, BOT = -1.4, SHOULDER = -0.2, T = 0.11;
+  const halfW = (y: number) => {
+    if (y > TOP || y < BOT) return -1;
+    if (y >= SHOULDER) return HW;
+    const t = (SHOULDER - y) / (SHOULDER - BOT);
+    return HW * (1 - Math.pow(t, 1.7));
+  };
+  const inside = (x: number, y: number) => Math.abs(x) <= halfW(y);
+  const bulge = (x: number) => 0.1 * (1 - (x / HW) ** 2);
+  for (let y = BOT; y <= TOP; y += S) {
+    for (let x = -HW; x <= HW; x += S) {
+      if (!inside(x, y)) continue;
+      const edge = halfW(y) - Math.abs(x);
+      const spine = x < -HW + 0.17;
+      const border = edge < 0.08 || y > TOP - 0.08 || spine && (Math.floor((y + 2) / 0.28) % 2 === 0 ? false : true) && x > -HW + 0.1;
+      const ring = Math.abs(Math.hypot(x - 0.04, y - 0.25) - 0.4) < 0.04;
+      const strap = Math.abs(y + 0.72) < 0.05 && edge > 0.04;
+      const gold = border || ring || strap;
+      const slx = (0.2 * x) / HW;
+      // front: leather cover with gold tooling
+      add(x, y, T + bulge(x), -slx, 0, 1, gold ? 0.95 : spine ? 0.45 : 0.6, gold ? HILT : COVER, 0);
+      // back: parchment pages with code lines
+      const rowF = (y + 1.45) / 0.12;
+      const row = Math.floor(rowF);
+      const f = rowF - row;
+      const len = 0.45 + 0.55 * hash(row);
+      const inLine = f > 0.2 && f < 0.75 && edge > 0.14 && x > -HW + 0.2 && x < -HW + 0.2 + len * 1.3;
+      add(x, y, -T - bulge(x), slx, 0, -1, inLine ? 1 : 0.32, PAGE, 0);
+    }
+  }
+  // rim: page edges
+  for (let y = BOT; y <= TOP; y += S * 0.6) {
+    for (let x = -HW; x <= HW; x += S * 0.6) {
+      if (!inside(x, y)) continue;
+      const o = [[1, 0], [-1, 0], [0, 1], [0, -1]].filter(([dx, dy]) => !inside(x + dx * S * 0.7, y + dy * S * 0.7));
+      if (!o.length) continue;
+      const nx = o.reduce((q, [dx]) => q + dx, 0);
+      const ny = o.reduce((q, [, dy]) => q + dy, 0);
+      const nl = Math.hypot(nx, ny) || 1;
+      for (let z = -T - bulge(x); z <= T + bulge(x); z += S) {
+        add(x, y, z, nx / nl, ny / nl, 0, 0.55 + 0.25 * (Math.floor(z / 0.02) % 2), PAGE, 0);
       }
     }
   }
-  // cover: ring around pages plus walls
-  for (let x = -1.75; x <= 1.75; x += S) {
-    for (let z = -1.2; z <= 1.2; z += S) {
-      if (Math.abs(x) <= 1.6 && Math.abs(z) <= 1.1) continue;
-      add(x, valley(Math.abs(x)) - 0.08, z, 0, 1, 0, 0.55, COVER, 0);
-    }
-  }
-  for (let x = -1.75; x <= 1.75; x += S) {
-    for (let y = 0; y <= 0.14; y += S) {
-      const base = valley(Math.abs(x)) - 0.08 - y;
-      add(x, base, -1.2, 0, 0, -1, 0.5, COVER, 0);
-      add(x, base, 1.2, 0, 0, 1, 0.5, COVER, 0);
-    }
-  }
-  for (let z = -1.2; z <= 1.2; z += S) {
-    for (let y = 0; y <= 0.14; y += S) {
-      add(-1.75, valley(1.75) - 0.08 - y, z, -1, 0, 0, 0.5, COVER, 0);
-      add(1.75, valley(1.75) - 0.08 - y, z, 1, 0, 0, 0.5, COVER, 0);
-    }
-  }
+  // terminal cursor in the ring
+  for (let a = -0.07; a <= 0.07; a += S) for (let b = -0.13; b <= 0.13; b += S) add(0.04 + a, 0.25 + b, T + bulge(0.04) + 0.02, 0, 0, 1, 1, CURSOR, 2);
 
   const box = (cx: number, cyy: number, cz: number, hx: number, hy: number, hz: number, mat: number, grp: number, tone = 1) => {
     for (let a = -hx; a <= hx; a += S) for (let b = -hy; b <= hy; b += S) {
@@ -88,35 +109,52 @@ function buildModel(): Model {
       add(cx + a, cyy - hy, cz + b, 0, -1, 0, tone, mat, grp);
     }
   };
-
-  // blade (tapered, rune stripes, fuller line)
-  for (let y = 0; y <= 2.5; y += S) {
-    const w = 0.115 * Math.min(1, 0.15 + y / 0.55);
-    const rune = Math.floor(y / 0.3) % 2 === 0 && y % 0.3 < 0.1;
-    for (let x = -w; x <= w; x += S) {
-      const fuller = Math.abs(x) < 0.02;
-      const t = rune && Math.abs(x) < w * 0.7 ? 0.6 : fuller ? 0.75 : 1;
-      add(x, y - 0.05, 0.03, 0, 0, 1, t, STEEL, 1);
-      add(x, y - 0.05, -0.03, 0, 0, -1, t, STEEL, 1);
-    }
-    add(w, y - 0.05, 0, 1, 0, 0, 0.9, STEEL, 1);
-    add(-w, y - 0.05, 0, -1, 0, 0, 0.9, STEEL, 1);
-  }
-  box(0, 2.51, 0, 0.55, 0.06, 0.09, HILT, 1); // crossguard
-  for (let y = 2.57; y <= 3.0; y += S) {
-    for (let a = 0; a < Math.PI * 2; a += 0.5) add(0.06 * Math.cos(a), y, 0.06 * Math.sin(a), Math.cos(a), 0, Math.sin(a), 0.8, HILT, 1);
-  }
-  for (let la = 0; la < Math.PI; la += 0.25) {
-    for (let lo = 0; lo < Math.PI * 2; lo += 0.3) {
+  const sphere = (cx: number, cyy: number, r: number, mat: number, grp: number, tone: number) => {
+    for (let la = 0; la < Math.PI; la += 0.25) for (let lo = 0; lo < Math.PI * 2; lo += 0.3) {
       const nx = Math.sin(la) * Math.cos(lo), ny = Math.cos(la), nz = Math.sin(la) * Math.sin(lo);
-      add(0.1 * nx, 3.08 + 0.1 * ny, 0.1 * nz, nx, ny, nz, 0.9, HILT, 1);
+      add(cx + r * nx, cyy + r * ny, r * nz, nx, ny, nz, tone, mat, grp);
     }
+  };
+  const rod = (y0: number, y1: number, r: number, mat: number, grp: number, tone: number) => {
+    for (let y = y0; y <= y1; y += S) for (let a = 0; a < Math.PI * 2; a += 0.55) add(r * Math.cos(a), y, r * Math.sin(a), Math.cos(a), 0, Math.sin(a), tone, mat, grp);
+  };
+
+  // ── sword: crossed behind, leaning right ──
+  xf = { phi: (-30 * Math.PI) / 180, ox: -0.875, oy: -1.67, oz: -0.16 };
+  rod(0.04, 0.5, 0.05, HILT, 1, 0.7); // grip
+  sphere(0, 0, 0.1, HILT, 1, 0.9); // pommel
+  box(0, 0.55, 0, 0.5, 0.05, 0.08, HILT, 1); // crossguard
+  for (let y = 0.6; y <= 3.8; y += S) {
+    const rel = y - 0.6;
+    const w = 0.12 * (rel > 2.8 ? Math.max(0.05, (3.2 - rel) / 0.4) : Math.min(1, 0.3 + rel / 0.3));
+    const rune = Math.floor(rel / 0.32) % 2 === 0 && rel % 0.32 < 0.1 && rel > 0.2 && rel < 2.7;
+    for (let x = -w; x <= w; x += S) {
+      const t = rune && Math.abs(x) < w * 0.7 ? 0.6 : Math.abs(x) < 0.02 ? 0.75 : 1;
+      add(x, y, 0.03, 0, 0, 1, t, STEEL, 1);
+      add(x, y, -0.03, 0, 0, -1, t, STEEL, 1);
+    }
+    add(w, y, 0, 1, 0, 0, 0.9, STEEL, 1);
+    add(-w, y, 0, -1, 0, 0, 0.9, STEEL, 1);
   }
-  box(0, 3.4, 0, 0.07, 0.13, 0.05, CURSOR, 2); // terminal cursor
+
+  // ── staff: crossed behind, leaning left ──
+  xf = { phi: (30 * Math.PI) / 180, ox: 0.875, oy: -1.67, oz: -0.3 };
+  rod(0, 3.5, 0.055, WOOD, 3, 0.75);
+  for (const y of [0.9, 1.0, 2.2]) rod(y, y + 0.05, 0.075, HILT, 3, 0.9); // gold bands
+  for (let a = 0; a < Math.PI * 2; a += 0.2) {
+    // crown ring and prongs around the orb
+    add(0.14 * Math.cos(a), 3.52, 0.14 * Math.sin(a), Math.cos(a), 0, Math.sin(a), 0.9, HILT, 3);
+    add(0.14 * Math.cos(a), 3.54, 0.14 * Math.sin(a), 0, 1, 0, 0.9, HILT, 3);
+  }
+  for (const a of [0, 1.57, 3.14, 4.71]) {
+    for (let t = 0; t <= 1; t += 0.08) add(0.14 * Math.cos(a) * (1 + 0.2 * t), 3.52 + 0.3 * t, 0.14 * Math.sin(a) * (1 + 0.2 * t), Math.cos(a), 0.3, Math.sin(a), 0.9, HILT, 3);
+  }
+  sphere(0, 3.7, 0.1, CURSOR, 3, 1);
+  xf = null;
   return m;
 }
 
-/** Hero object: sword in a grimoire, drawn as shaded ASCII. Cursor tilts it, a click pulls the sword. */
+/** Hero object: mage-knight arms drawn as shaded ASCII. Cursor tilts it, a click raises the sword and staff. */
 export default function AsciiGrimoire() {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -164,12 +202,12 @@ export default function AsciiGrimoire() {
       const k = Math.min(1, Math.max(0, (time - pull) / 1500));
       const lift = pull > 0 ? 1.4 * Math.sin(Math.PI * k) ** 2 : 0;
       const cursorOn = Math.floor(time / 520) % 2 === 0;
-      const scale = cols * 0.222;
+      const scale = cols * 0.195;
       const { pos, nrm, tone, mat, grp } = model;
       for (let i = 0; i < N; i++) {
         if (grp[i] === 2 && !cursorOn) continue;
         const x = pos[i * 3];
-        const y = pos[i * 3 + 1] + (grp[i] > 0 ? lift : 0);
+        const y = pos[i * 3 + 1] + (grp[i] === 1 ? lift : grp[i] === 3 ? lift * 0.5 : 0);
         const z = pos[i * 3 + 2];
         const x1 = x * ca + z * sa;
         const z1 = -x * sa + z * ca;
@@ -251,7 +289,7 @@ export default function AsciiGrimoire() {
     <canvas
       ref={ref}
       role="img"
-      aria-label="A grimoire open on its spine with a sword planted in it, slowly revolving, drawn in code characters"
+      aria-label="A grimoire worn as a knight\u2019s shield with a sword and a mage\u2019s staff crossed behind it, slowly revolving, drawn in code characters"
       title="Click it. Go on."
       style={{ cursor: "pointer", filter: "drop-shadow(0 0 16px rgba(220,150,70,0.30))", WebkitMaskImage: "radial-gradient(ellipse 54% 54% at 50% 50%, #000 78%, transparent 100%)", maskImage: "radial-gradient(ellipse 54% 54% at 50% 50%, #000 78%, transparent 100%)" }}
     />
