@@ -9,11 +9,11 @@ const ROW = 1.65; // glyph height / width
 // materials
 const PAGE = 0, COVER = 1, STEEL = 2, CURSOR = 3, HILT = 4;
 const COLORS: [number, number, number][] = [
-  [242, 193, 78], // page: gold
-  [255, 106, 61], // cover: ember
+  [236, 214, 160], // page: aged parchment
+  [196, 66, 52], // cover: oxblood leather
   [239, 231, 214], // steel: bone
   [255, 250, 235], // cursor
-  [242, 160, 70], // hilt
+  [220, 174, 85], // hilt: candle gold
 ];
 
 const hash = (n: number) => {
@@ -253,7 +253,7 @@ export default function AsciiGrimoire() {
       role="img"
       aria-label="A grimoire open on its spine with a sword planted in it, slowly revolving, drawn in code characters"
       title="Click it. Go on."
-      style={{ cursor: "pointer", filter: "drop-shadow(0 0 16px rgba(255,106,61,0.32))", WebkitMaskImage: "radial-gradient(ellipse 54% 54% at 50% 50%, #000 78%, transparent 100%)", maskImage: "radial-gradient(ellipse 54% 54% at 50% 50%, #000 78%, transparent 100%)" }}
+      style={{ cursor: "pointer", filter: "drop-shadow(0 0 16px rgba(220,150,70,0.30))", WebkitMaskImage: "radial-gradient(ellipse 54% 54% at 50% 50%, #000 78%, transparent 100%)", maskImage: "radial-gradient(ellipse 54% 54% at 50% 50%, #000 78%, transparent 100%)" }}
     />
   );
 }

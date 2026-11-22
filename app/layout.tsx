@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Caveat, Fraunces, Instrument_Sans } from "next/font/google";
+import AmbientField from "../components/AmbientField";
 import "./globals.css";
 
 const display = Fraunces({ subsets: ["latin"], variable: "--font-display", axes: ["SOFT", "WONK", "opsz"] });
@@ -21,7 +22,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${display.variable} ${body.variable} ${hand.variable}`}>
-      <body>{children}</body>
+      <body>
+        <AmbientField />
+        {children}
+      </body>
     </html>
   );
 }

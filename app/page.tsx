@@ -126,7 +126,7 @@ export default async function Page() {
           <a href={SITE.github}>GitHub</a>
           <a href={SITE.linkedin}>LinkedIn</a>
         </p>
-        <p className="sig" aria-hidden="true">Qasyeef Sunnymizer</p>
+        <div className="signoff"><span className="seal" aria-hidden="true">S</span><p className="sig" aria-hidden="true">Qasyeef Sunnymizer</p></div>
       </section>
 
       <footer className="foot">
